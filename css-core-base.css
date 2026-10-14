@@ -130,6 +130,8 @@ html[data-vh-fix][data-scaled] body{
   transform:scale(var(--island-scale)); transform-origin:0 0;
 }
 html[data-vh-fix] .home{ height:100%; min-height:0; }
+/* iOS 主屏幕 App：所有底栏（桌面 Dock、聊天输入栏、电话底栏等）在原 10px 基础上再抬高 30px，避开圆角与手势条。 */
+html[data-vh-fix]{ --island-bottom-lift:40px; }
 
 /* 浏览器默认的加粗标签（<strong>/<b>/表头/小标题）原本固定 700，不会随字重拉条变化；这里统一接入变量。
  * 特异性最低，任何带 class 的单独字重声明仍然优先。 */
