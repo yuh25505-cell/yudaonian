@@ -1,0 +1,373 @@
+/* 岛屿 · 桌面 · 主屏幕 / 图标网格 / Dock / 桌面外观编辑器
+ * 由原 app.css 按 App 拆分而来；规则相对顺序保持不变。
+ * 加载顺序见 index.html：core-base → core-shared → home → music → chat → phone → worldbook → settings → 其余占位 App。 */
+
+.home{
+  position:relative; z-index:1; display:flex; flex-direction:column; width:100%;
+  max-width:520px; height:calc(100vh / var(--island-scale,1)); height:calc(100dvh / var(--island-scale,1)); margin:0 auto; color:#f7f7f7;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:calc(env(safe-area-inset-bottom,0px) + var(--island-bottom-lift,10px));
+}
+
+.home-body{
+  flex:1 1 auto; min-height:0; overflow:hidden; overscroll-behavior:none;
+  padding:16px 20px 14px;
+}
+
+.home-body::-webkit-scrollbar{display:none}
+
+.home-topline{
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  padding:4px 2px 16px;
+}
+
+.home-brand{display:flex; align-items:center; gap:9px; min-width:0;}
+
+.brand-mark{
+  width:18px; height:18px; border:1px solid rgba(255,255,255,.35); border-radius:50%;
+  display:grid; place-items:center; font-size:calc(8px * var(--island-font-size-scale)); color:#fff; overflow:hidden;
+}
+
+.brand-mark::after{content:''; width:7px; height:7px; border-radius:50%; background:#fff; display:block;}
+
+.brand-word{font-size:calc(14px * var(--island-font-size-scale)); font-weight:var(--island-fw-650); letter-spacing:.18em; margin-right:-.18em;}
+
+.brand-meta{font-size:calc(9px * var(--island-font-size-scale)); font-weight:var(--island-fw-600); letter-spacing:.15em; color:rgba(255,255,255,.28); white-space:nowrap;}
+
+.section-head{display:flex; align-items:center; justify-content:space-between; padding:0 2px 10px;}
+
+.section-title{font-size:calc(9px * var(--island-font-size-scale)); font-weight:var(--island-fw-650); letter-spacing:.18em; color:rgba(255,255,255,.34); text-transform:uppercase;}
+
+.section-count{font-size:calc(8px * var(--island-font-size-scale)); font-weight:var(--island-fw-650); letter-spacing:.12em; color:rgba(255,255,255,.18);}
+
+/* 主屏幕：4 列 × 6 行网格。日历占 4×2、音乐占 2×2，其余格子由应用图标按顺序自动填入。
+ * 所有组件 / 图标块都只声明“占几列几行”，不再写死在第几行：关掉任意组件后，后面的内容会自动向上补位。
+ * 行高 --home-row-h 由 js（syncHomeGridRows）按图标实际高度写入，所以改图标大小 / 关闭标签后整张网格会一起缩放。 */
+.home-grid{
+  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-template-rows:repeat(6,var(--home-row-h,80px));
+  gap:var(--home-gap-y,16px) 8px; padding:0;
+}
+
+.home-grid > .app,.home-app-block > .app{ align-self:start; }
+
+/* 备忘录 / 天气 / 时钟 / 设置：占 2×2（默认在左下），内部栅格与外层列宽、行高、间距完全对齐；行位置由网格自动排布 */
+.home-app-block{
+  grid-column:1 / span 2; grid-row:span 2; min-width:0;
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:repeat(2,var(--home-row-h,80px));
+  gap:var(--home-gap-y,16px) 8px;
+}
+
+.app{
+  display:flex; flex-direction:column; align-items:center; gap:8px; min-width:0; text-align:center;
+  color:#fff; transition:transform .22s cubic-bezier(.22,1,.36,1), opacity .22s ease;
+}
+
+.app:active{ transform:scale(.93); }
+
+.app-name{max-width:100%;font-size:calc(10px * var(--island-font-size-scale));font-weight:var(--island-fw-520);color:rgba(255,255,255,.64);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+.page-dots{flex:none;display:flex;justify-content:center;gap:6px;margin:5px 0 12px;}
+
+.page-dots i{width:4px;height:4px;border-radius:50%;background:#fff;opacity:.18;}
+
+.page-dots i.on{width:12px;border-radius:999px;opacity:.75;}
+
+.dock{
+  flex:none; display:grid; grid-template-columns:repeat(4,1fr); gap:4px; margin:0 18px;
+  padding:13px 10px; border-radius:40px; background:rgba(255,255,255,.075); border:none;
+  box-shadow:0 20px 46px rgba(0,0,0,.36), inset 0 1px rgba(255,255,255,.08);
+  backdrop-filter:blur(30px) saturate(.72); -webkit-backdrop-filter:blur(30px) saturate(.72);
+}
+
+.dock .app-name{display:none;}
+
+.dock .app:active{ transform:scale(.9); }
+
+
+@media (max-width:390px){
+.home-body{padding-left:16px;padding-right:16px;}
+.home-grid,.home-app-block{gap:var(--home-gap-y,14px) 5px;}
+.app-icon{width:54px;}
+}
+
+@media (prefers-reduced-motion: reduce){
+.home{opacity:1;transform:none;}
+}
+
+/* 岛屿 visual rebuild: monochrome rectangular app tiles + system-aware theme */
+.home{ color:var(--home-fg); }
+
+.brand-mark{ border-color:var(--home-border-strong); color:var(--home-fg); border-radius:5px; }
+
+.brand-mark::after{ background:var(--home-fg); border-radius:1px; }
+
+.brand-word{ color:var(--home-fg); }
+
+.brand-meta{ color:var(--home-faint); }
+
+.section-title{ color:var(--home-faint); }
+
+.section-count{ color:var(--home-faint); opacity:.6; }
+
+/* Desktop + dock icons: one shape, one radius, one language, zero shadow. */
+.app-icon{
+  width:min(100%,58px);
+  aspect-ratio:1 / 1;
+  border-radius:5px;
+  display:grid;
+  place-items:center;
+  color:var(--tile-fg);
+  background:transparent;
+  border:none;
+  box-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
+
+.app-name{ color:var(--home-soft); }
+
+.dock{
+  background:var(--home-surface);
+  border:none;
+  box-shadow:none;
+  backdrop-filter:blur(18px) saturate(.65);
+  -webkit-backdrop-filter:blur(18px) saturate(.65);
+  border-radius:40px;
+}
+
+.dock .app-icon{ width:52px; border-radius:5px; background:transparent; border:none; box-shadow:none; }
+
+.app-icon.has-custom-image{ overflow:hidden; }
+
+.app-icon.has-custom-image img{ width:100%; height:100%; display:block; object-fit:cover; filter:none; }
+
+html[data-theme="dark"] .home[data-dim-dark-wallpaper="on"] .app-icon.has-custom-image img{ filter:brightness(var(--dark-icon-brightness, .58)); }
+
+html[data-theme="dark"] .home[data-dim-dark-wallpaper="off"] .app-icon.has-custom-image img{ filter:none; }
+
+/* 「默认」图标主题：透明 PNG 自带圆角与底色，原样铺满，不加底板、不裁切、不叠阴影 */
+.app-icon.is-default-icon{ overflow:visible; background:transparent; border:none; box-shadow:none; }
+.app-icon.is-default-icon img{ width:100%; height:100%; display:block; object-fit:contain; filter:none; -webkit-user-drag:none; user-select:none; pointer-events:none; }
+html[data-theme="dark"] .home[data-dim-dark-wallpaper="on"] .app-icon.is-default-icon img{ filter:brightness(var(--dark-icon-brightness, .58)); }
+html[data-theme="dark"] .home[data-dim-dark-wallpaper="off"] .app-icon.is-default-icon img{ filter:none; }
+
+.icon-library-item{ min-width:0; padding:12px 10px 10px; border-radius:14px; background:var(--card-bg); border:1px solid var(--card-bd); text-align:center; }
+
+.icon-library-preview{ margin:0 auto; width:58px; height:58px; border-radius:5px; }
+
+.icon-library-name{ margin-top:8px; font-size:calc(14px * var(--island-font-size-scale)); font-weight:var(--island-fw-550); color:var(--fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.icon-library-actions{ display:flex; gap:6px; margin-top:8px; }
+
+.icon-library-btn{ flex:1 1 0; min-width:0; padding:7px 6px; border-radius:9px; font-size:calc(11px * var(--island-font-size-scale)); color:var(--fg-soft); background:var(--bubble-bg); border:1px solid var(--track); }
+
+.icon-library-btn[hidden]{ display:none; }
+
+.dock{border-radius:var(--dock-radius,40px);background:rgba(255,255,255,var(--dock-effective-alpha,.075))}
+
+.dock-control-row{display:grid;grid-template-columns:72px minmax(0,1fr) 48px 46px;align-items:center;column-gap:8px;min-height:58px;padding:12px 16px}
+
+.dock-control-label{min-width:0;white-space:nowrap;font-size:calc(13.5px * var(--island-font-size-scale));font-weight:var(--island-fw-600);color:var(--fg)}
+
+.dock-control-value{width:48px;text-align:right;font-size:calc(13px * var(--island-font-size-scale));font-weight:var(--island-fw-650);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* 拉条：输入框本体加高到 28px 作为触摸热区（原来只有 4px 高，手指很难按中）；轨道 / 滑块用伪元素绘制；负外边距保持原有版面高度 */
+.dock-control-range{width:100%;height:28px;margin:-12px 0;padding:0;-webkit-appearance:none;appearance:none;border:0;outline:none;background:transparent;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent}
+.dock-control-range::-webkit-slider-runnable-track{height:4px;border-radius:999px;background:linear-gradient(90deg,var(--fg) 0%,var(--fg) var(--dock-range-pct,0%),var(--track) var(--dock-range-pct,0%),var(--track) 100%)}
+.dock-control-range::-moz-range-track{height:4px;border-radius:999px;background:var(--track)}
+.dock-control-range::-moz-range-progress{height:4px;border-radius:999px;background:var(--fg)}
+.dock-control-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;margin-top:-9px;border:0;border-radius:50%;background:var(--fg);box-shadow:0 1px 4px rgba(0,0,0,.22);cursor:pointer}
+.dock-control-range::-moz-range-thumb{width:22px;height:22px;border:0;border-radius:50%;background:var(--fg);box-shadow:0 1px 4px rgba(0,0,0,.22);cursor:pointer}
+.dock-control-range:disabled{cursor:default;opacity:.45;pointer-events:none}
+
+
+
+
+
+
+.dock-control-lock{width:46px;height:30px;padding:0 7px;border-radius:9px;background:var(--bubble-bg);border:1px solid var(--track);font-size:calc(11px * var(--island-font-size-scale));font-weight:var(--island-fw-600);color:var(--fg-soft);white-space:nowrap}
+
+.dock-control-lock.is-on{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+
+.dock-control-divider{height:1px;margin:0 16px;background:var(--track)}
+
+.home .section-head,.home-topline,.home .page-dots{display:none}
+
+.widget-library{margin:0 16px 24px;display:grid;gap:10px}
+
+.widget-card{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;background:var(--card-bg);border:1px solid var(--card-bd)}
+
+.widget-card-head{display:flex;align-items:center;gap:10px}
+
+.widget-card-copy{flex:1 1 auto;min-width:0}
+
+.widget-card-copy strong{display:block;font-size:calc(14px * var(--island-font-size-scale));font-weight:var(--island-fw-600)}
+
+.widget-card-copy em{display:block;margin-top:3px;font-size:calc(11px * var(--island-font-size-scale));color:var(--fg-faint);font-style:normal}
+
+.widget-toggle{position:relative;flex:none;width:46px;height:28px;border-radius:999px;background:var(--track);border:1px solid var(--card-bd);transition:background-color .2s ease,border-color .2s ease;touch-action:manipulation}
+
+.widget-toggle::after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:var(--fg);will-change:transform;transition:transform .22s cubic-bezier(.3,.8,.3,1),background-color .2s ease}
+
+.widget-card.is-on .widget-toggle{background:var(--fg);border-color:var(--fg)}
+
+.widget-card.is-on .widget-toggle::after{background:var(--bg);transform:translateX(18px)}
+
+.widget-controls{display:grid;gap:8px}
+
+.widget-control-label{font-size:calc(10px * var(--island-font-size-scale));font-weight:var(--island-fw-650);letter-spacing:.08em;color:var(--fg-faint);text-transform:uppercase}
+
+.widget-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+
+.widget-chip{min-height:36px;padding:7px 8px;border-radius:10px;background:var(--bubble-bg);border:1px solid transparent;font-size:calc(14px * var(--island-font-size-scale));color:var(--fg-soft)}
+
+.widget-chip.is-on{background:var(--fg);color:var(--bg)}
+
+.home[data-icon-labels="off"] .app-name{display:none}
+
+/* 无边框：只显示一枚实心符号 */
+.app-icon.is-flat .flat-glyph{ width:100%; height:100%; display:grid; place-items:center; }
+.app-icon.is-flat .flat-glyph svg{ width:62%; height:62%; display:block; overflow:visible; fill:currentColor; stroke:none; }
+
+@media (max-width:390px){
+.app-icon{ width:54px; }
+}
+
+/* ===== 液态玻璃图标（iOS Liquid Glass）=====
+ * 立体感来自四层叠加（自下而上）：
+ *   1. .lq-glass   壁纸模糊 +（Chromium 内核）边缘折射位移，玻璃自身有“厚度”
+ *   2. 底板淡淡的受光渐变
+ *   3. ::after     厚边内侧高光 / 暗边 / 左上镜面反光（放在玻璃层之上，不会被一起折射掉）
+ *   4. 符号        带投影与边缘光的磨砂玻璃浮雕
+ * --lq-depth（设置里的「立体厚度」）统一缩放高光、暗边与投影的强度。 */
+.app-icon.is-liquid{
+  --lq-bg:
+    linear-gradient(165deg, rgba(255,255,255,calc(.20 * var(--lq-fill,1))), rgba(255,255,255,calc(.04 * var(--lq-fill,1))) 46%, rgba(20,24,34,calc(.10 * var(--lq-fill,1))));
+  position:relative; isolation:isolate; overflow:hidden; border:none; color:#fff;
+  border-radius:22.5%;
+  background:var(--lq-bg);
+  -webkit-backdrop-filter:none; backdrop-filter:none;
+}
+
+html[data-theme="dark"] .app-icon.is-liquid{
+  --lq-bg:
+    linear-gradient(165deg, rgba(255,255,255,calc(.18 * var(--lq-fill,1))), rgba(255,255,255,calc(.03 * var(--lq-fill,1))) 46%, rgba(255,255,255,calc(.06 * var(--lq-fill,1))));
+}
+
+.app-icon.is-liquid .lq-glass{
+  position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none;
+  -webkit-backdrop-filter:blur(var(--lq-blur,10px)) saturate(1.9); backdrop-filter:blur(var(--lq-blur,10px)) saturate(1.9);
+}
+/* 边缘折射：先位移（折射）再模糊，保证折射的弯曲细节还在 */
+html.lq-lens .app-icon.is-liquid .lq-glass{
+  -webkit-backdrop-filter:url(#lqLensIcon) blur(var(--lq-blur,10px)) saturate(1.9); backdrop-filter:url(#lqLensIcon) blur(var(--lq-blur,10px)) saturate(1.9);
+}
+
+/* 边缘高光（iOS 26 的做法）：光只“打”在左上与右下两个转角，沿边迅速渐隐；
+ * 另外两个转角与四条边中段几乎没有线，只留一层极淡的底光，所以不会出现一圈连续的白线。
+ * ::before = 极细的高光描边（径向渐变 + 环形遮罩），::after = 转角内侧的柔光。 */
+.app-icon.is-liquid::before{
+  content:""; position:absolute; inset:0; z-index:3; border-radius:inherit; padding:var(--lq-rim,1px); pointer-events:none;
+  background:
+    radial-gradient(ellipse 62% 62% at 0% 0%, rgba(255,255,255,calc(.95 * var(--lq-depth,1))) 0%, rgba(255,255,255,calc(.42 * var(--lq-depth,1))) 38%, rgba(255,255,255,0) 100%),
+    radial-gradient(ellipse 55% 55% at 100% 100%, rgba(255,255,255,calc(.70 * var(--lq-depth,1))) 0%, rgba(255,255,255,calc(.28 * var(--lq-depth,1))) 38%, rgba(255,255,255,0) 100%),
+    linear-gradient(rgba(255,255,255,calc(.07 * var(--lq-depth,1))), rgba(255,255,255,calc(.07 * var(--lq-depth,1))));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.app-icon.is-liquid::after{
+  content:""; position:absolute; inset:0; z-index:2; border-radius:inherit; pointer-events:none;
+  background:
+    radial-gradient(ellipse 58% 58% at 0% 0%, rgba(255,255,255,calc(.26 * var(--lq-depth,1))) 0%, rgba(255,255,255,0) 72%),
+    radial-gradient(ellipse 50% 50% at 100% 100%, rgba(255,255,255,calc(.16 * var(--lq-depth,1))) 0%, rgba(255,255,255,0) 72%);
+}
+
+/* 符号 = 玻璃浮雕：.lq-gblur 用符号轮廓遮出一块模糊壁纸，svg 画半透明本体、边缘光和投影 */
+.app-icon.is-liquid .lq-glyph{ position:relative; z-index:4; width:100%; height:100%; display:grid; place-items:center; }
+
+.app-icon.is-liquid .lq-gblur{
+  position:absolute; left:23%; top:23%; width:54%; height:54%; pointer-events:none;
+  -webkit-mask:var(--lq-mask) center / 100% 100% no-repeat; mask:var(--lq-mask) center / 100% 100% no-repeat;
+  -webkit-backdrop-filter:blur(var(--lq-gblur,8px)) saturate(1.7) brightness(1.08); backdrop-filter:blur(var(--lq-gblur,8px)) saturate(1.7) brightness(1.08);
+  background:rgba(255,255,255,.08);
+}
+
+.app-icon.is-liquid .lq-glyph svg{
+  position:relative; width:54%; height:54%; display:block; overflow:visible;
+  fill-opacity:var(--lq-gfill,.6);
+  stroke:url(#lqGlyphEdge); stroke-opacity:var(--lq-gedge,.5); stroke-width:.45; stroke-linejoin:round;
+}
+
+/* Dock：同样是厚玻璃。自己不用 backdrop-filter（避免嵌套导致里面的图标发白），
+ * 由 ::before 做模糊 +（Chromium）边缘折射，::after 画厚边高光。 */
+.home .dock{
+  position:relative; isolation:isolate; border:none;
+  -webkit-backdrop-filter:none; backdrop-filter:none;
+  background:linear-gradient(180deg, rgba(255,255,255,calc(var(--dock-effective-alpha, .075) * .42)), rgba(255,255,255,calc(var(--dock-effective-alpha, .075) * .22)));
+}
+
+.home .dock::before{
+  content:""; position:absolute; inset:0; z-index:-1; border-radius:inherit; pointer-events:none;
+  -webkit-backdrop-filter:blur(var(--dock-blur,16px)) saturate(1.6); backdrop-filter:blur(var(--dock-blur,16px)) saturate(1.6);
+}
+html.lq-lens .home .dock::before{
+  -webkit-backdrop-filter:url(#lqLensDock) blur(var(--dock-blur,16px)) saturate(1.6); backdrop-filter:url(#lqLensDock) blur(var(--dock-blur,16px)) saturate(1.6);
+}
+
+/* Dock 同理：高光只聚在左上、右下两个转角（用固定半径，避免长条形被拉成整条亮边） */
+.home .dock::after{
+  content:""; position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none; padding:1px;
+  background:
+    radial-gradient(circle 84px at 0% 0%, rgba(255,255,255,calc(.85 * var(--lq-depth,1))) 0%, rgba(255,255,255,calc(.34 * var(--lq-depth,1))) 40%, rgba(255,255,255,0) 100%),
+    radial-gradient(circle 70px at 100% 100%, rgba(255,255,255,calc(.62 * var(--lq-depth,1))) 0%, rgba(255,255,255,calc(.24 * var(--lq-depth,1))) 40%, rgba(255,255,255,0) 100%),
+    linear-gradient(rgba(255,255,255,calc(.07 * var(--lq-depth,1))), rgba(255,255,255,calc(.07 * var(--lq-depth,1))));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+.app-icon.is-liquid.has-custom-image img{ position:relative; z-index:0; border-radius:inherit; }
+
+/* 图标圆角：由「图标调节 › 圆角」拉条控制（%，相对图标边长），对所有图标主题生效 */
+.home .app-icon,
+.home .dock .app-icon,
+.home .app-icon.is-liquid,
+.home .dock .app-icon.is-liquid,
+.app-icon.icon-library-preview{ border-radius:var(--icon-radius,9%); }
+
+
+/* ===== 图标调节：主题分组（可折叠，默认折叠）===== */
+.icon-adj-group[hidden]{ display:none; }
+.icon-adj-group-head{ display:flex; align-items:center; justify-content:space-between; width:100%; min-height:54px; padding:12px 16px; text-align:left; color:var(--fg); }
+.icon-adj-group-title{ font-size:calc(13.5px * var(--island-font-size-scale)); font-weight:var(--island-fw-600); }
+.icon-adj-group-chev{ width:18px; height:18px; flex:none; color:var(--fg-soft); transition:transform .22s ease; }
+.icon-adj-group.is-open .icon-adj-group-chev{ transform:rotate(180deg); }
+.icon-adj-group-body[hidden]{ display:none; }
+
+
+/* ===== 图标大小固定 58px；整体缩放由「屏幕比例」做（见 css-core-base.css 的 data-scaled）===== */
+.home .app-icon,
+.home .dock .app-icon{ width:58px; max-width:100%; }
+
+/* ===== 图标名称：自定义字号 / 颜色。默认白色，配一圈柔边，白色或浅色壁纸上也看得清 ===== */
+.home .app-name{
+  font-size:calc(var(--label-size,11px) * var(--island-font-size-scale));
+  font-weight:var(--island-fw-600,600);
+  color:var(--label-color,#fff);
+  text-shadow:var(--label-shadow, 0 0 1px rgba(0,0,0,.34), 0 1px 3px rgba(0,0,0,.20));
+}
+
+/* ===== 无 Dock 栏背景：只留图标 ===== */
+.home[data-dock-bg="off"] .dock{ background:none; box-shadow:none; border:none; -webkit-backdrop-filter:none; backdrop-filter:none; }
+.home[data-dock-bg="off"] .dock::before,
+.home[data-dock-bg="off"] .dock::after{ display:none; }
+
+/* ===== 设置里的数值输入行 ===== */
+.num-row{ display:flex; align-items:center; gap:10px; min-height:58px; padding:10px 16px; }
+.num-row-label{ flex:none; min-width:72px; white-space:nowrap; font-size:calc(13.5px * var(--island-font-size-scale)); font-weight:var(--island-fw-600); color:var(--fg); }
+.num-input{ width:84px; min-height:36px; padding:6px 10px; border-radius:10px; border:1px solid var(--track); background:var(--bubble-bg); color:var(--fg); font-size:calc(14px * var(--island-font-size-scale)); font-variant-numeric:tabular-nums; text-align:center; outline:none; -moz-appearance:textfield; }
+.num-input::-webkit-outer-spin-button,.num-input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+.num-input:focus{ border-color:var(--fg); }
+.num-input.hex{ width:104px; text-transform:uppercase; letter-spacing:.04em; }
+.num-unit{ font-size:calc(13px * var(--island-font-size-scale)); color:var(--fg-soft); }
+.color-input{ flex:none; width:38px; height:36px; padding:2px; border-radius:10px; border:1px solid var(--track); background:var(--bubble-bg); cursor:pointer; }

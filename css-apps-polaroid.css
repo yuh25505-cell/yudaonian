@@ -1,0 +1,70 @@
+/* 岛屿 · 拍立得 · 桌面「拍立得」小组件（2×2：叠放的两张相纸，上面一张的照片可导入本地图片）
+ * 与 js-apps-polaroid.js 对应。占主屏幕网格 2×2（默认在右下，第 3–4 列），行位置由网格自动排布，上方组件关闭后会自动上移。 */
+
+.home-polaroid-widget{ display:block; grid-column:3 / span 2; grid-row:span 2; min-width:0; min-height:0; }
+
+.home[data-widget-polaroid="off"] .home-polaroid-widget{ display:none; }
+
+/* 关掉拍立得后，右下角不再留空：备忘录 / 天气 / 时钟 / 设置 的 2×2 外框取消（display:contents），
+ * 4 个图标直接并入主网格，跟在前面的图标后面依次补位；再打开拍立得，外框恢复，回到原来的位置。 */
+.home[data-widget-polaroid="off"] .home-app-block{ display:contents; }
+
+.polaroid-widget{
+  position:relative; box-sizing:border-box; width:100%; height:100%; overflow:hidden;
+  display:grid; place-items:center; border-radius:24px;
+  background:none; border:0; color:var(--home-fg);
+}
+
+/* 相纸：宽高比 5:6，照片区为正方形，底部留出拍立得的白边 */
+.polaroid-card,.polaroid-back{
+  grid-area:1 / 1; box-sizing:border-box; height:80%; aspect-ratio:5 / 6; max-width:78%;
+  border-radius:4px; background:#fff;
+}
+
+.polaroid-back{ transform:rotate(5deg) translate(3%,-1%); background:#fff; box-shadow:none; }
+
+.polaroid-card{
+  position:relative; display:flex; flex-direction:column; justify-content:flex-start; align-items:stretch; padding:4% 4% 0; transform:rotate(-4deg);
+  box-shadow:none; transition:opacity .2s ease;
+}
+
+.polaroid-photo{
+  position:relative; flex:none; display:grid; place-items:center; width:100%; aspect-ratio:1 / 1; overflow:hidden;
+  border-radius:0; background:transparent; color:#8a8883; border:0; padding:0; margin:0; font:inherit; transition:opacity .2s ease;
+}
+
+/* 照片向四周多铺 0.5px，盖住子像素取整产生的细边线；照片区本身不再有底色 */
+.polaroid-img{ position:absolute; left:-.5px; top:-.5px; width:calc(100% + 1px); height:calc(100% + 1px); display:block; object-fit:cover; border:0; outline:0; border-radius:0; }
+
+.polaroid-img[hidden],.polaroid-empty[hidden]{ display:none; }
+
+.polaroid-empty{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; background:#d8d6d1; }
+
+.polaroid-empty svg{ width:22px; height:22px; display:block; }
+
+.polaroid-empty em{ font-style:normal; font-size:calc(9px * var(--island-font-size-scale)); font-weight:var(--island-fw-550); letter-spacing:.06em; }
+
+/* 夜间与桌面图标图片一致：跟随「夜间调暗」设置 */
+html[data-theme="dark"] .home[data-dim-dark-wallpaper="on"] .polaroid-img{ filter:brightness(var(--dark-icon-brightness,.58)); }
+
+/* 相纸底部白边里的文案：居中、可直接点击编辑 */
+.polaroid-caption{
+  flex:1 1 auto; min-height:0; width:100%; box-sizing:border-box; margin:0; padding:0 2px;
+  border:0; border-radius:0; outline:none; background:transparent; -webkit-appearance:none; appearance:none;
+  text-align:center; color:#6f6d69; caret-color:#6f6d69; user-select:text; -webkit-user-select:text;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Noto Sans Symbols 2","Noto Sans Kannada","Microsoft YaHei",sans-serif;
+  font-size:calc(11px * var(--island-font-size-scale)); line-height:1; letter-spacing:0;
+}
+
+/* 相纸颜色「黑」：两张相纸都变黑；底边文案改成浅灰，空照片占位也压暗，边缘只留一圈很暗的细线 */
+.home[data-polaroid-paper="black"] .polaroid-card,
+.home[data-polaroid-paper="black"] .polaroid-back{ background:#151515; box-shadow:inset 0 0 0 1px rgba(255,255,255,.015); }
+.home[data-polaroid-paper="black"] .polaroid-caption{ color:#b4b2ad; caret-color:#b4b2ad; }
+.home[data-polaroid-paper="black"] .polaroid-empty{ background:#2a2a2a; color:#8f8d88; }
+
+/* 背景样式「毛玻璃」：磨砂的是相纸后面的整块组件底板，两张相纸本身仍是白色。 */
+.home[data-polaroid-bg="glass"] .polaroid-widget{
+  background:rgba(255,255,255,calc(var(--cal-glass-base,.72) * var(--polaroid-glass-k,.6)));
+  backdrop-filter:blur(var(--polaroid-glass-blur,20px)) saturate(1.6); -webkit-backdrop-filter:blur(var(--polaroid-glass-blur,20px)) saturate(1.6);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,var(--cal-glass-edge,.5)), inset 0 1px 0 rgba(255,255,255,calc(var(--cal-glass-edge,.5) + .1));
+}

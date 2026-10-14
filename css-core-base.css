@@ -1,0 +1,306 @@
+/* 岛屿 · 核心基础 · 主题变量 / 重置 / 壁纸 / 启动层 / 状态栏 / Toast
+ * 由原 app.css 按 App 拆分而来；规则相对顺序保持不变。
+ * 加载顺序见 index.html：core-base → core-shared → home → music → chat → phone → worldbook → settings → 其余占位 App。 */
+
+:root{
+  --island-font-size-scale:1;
+  --island-scale:1;            /* 屏幕比例（全局缩放），由 js 写入 */
+  --island-bottom-lift:10px;   /* 所有界面的底栏统一上移的距离 */
+  --island-fw-300:300; --island-fw-400:400; --island-fw-500:500; --island-fw-520:520; --island-fw-550:550;
+  --island-fw-600:600; --island-fw-650:650; --island-fw-680:680; --island-fw-700:700; --island-fw-720:720;
+  color-scheme: light;
+  --bg:#f3f3f3; --fg:#101010;
+  --fg-soft:rgba(16,16,16,.62); --fg-faint:rgba(16,16,16,.36);
+  --track:rgba(16,16,16,.11);
+  --card-bg:rgba(255,255,255,.78); --card-bd:rgba(16,16,16,.10);
+  --card-shadow:none;
+  --icon-bg-a:#ffffff; --icon-bg-b:#ededed;
+  --icon-bd:rgba(16,16,16,.12); --icon-fg:#101010;
+  --icon-shadow:none;
+  --dock-bg:rgba(255,255,255,.82); --dock-bd:rgba(16,16,16,.10);
+  --tab-bg:rgba(16,16,16,.045); --tab-bd:rgba(16,16,16,.08);
+  --bubble-bg:rgba(16,16,16,.055);
+  --bubble-them:rgba(16,16,16,.07); --bubble-them-fg:#101010;
+  --bubble-me:#101010; --bubble-me-fg:#ffffff;
+  /* Chat message tokens: stable visual API for future chat themes. */
+  --chat-bubble-sent-bg:#95EC69; --chat-bubble-received-bg:#ffffff; --chat-bubble-fg:#000000;
+  --chat-file-bg:rgba(16,16,16,.055); --chat-file-fg:#101010; --chat-file-icon-bg:#101010; --chat-file-icon-fg:#ffffff; --chat-file-meta:rgba(16,16,16,.36);
+  --chat-image-text-bg:#ffffff; --chat-image-text-fg:#111111; --chat-image-text-border:rgba(17,17,17,.08);
+  --wp-a:rgba(16,16,16,.05); --wp-b:rgba(16,16,16,.025);
+  --wallpaper-bg:#f3f3f3;
+  --home-fg:#101010; --home-soft:rgba(16,16,16,.56); --home-faint:rgba(16,16,16,.34);
+  --home-surface:rgba(255,255,255,.66); --home-surface-soft:rgba(16,16,16,.035);
+  --home-border:rgba(16,16,16,.10); --home-border-strong:rgba(16,16,16,.17);
+  --tile-bg:#ffffff; --tile-border:rgba(16,16,16,.16); --tile-fg:#101010;
+  --cal-glass-base:.72; --cal-glass-edge:.55;   /* 日历毛玻璃：白色底的最大不透明度 / 边缘高光 */
+  --ok:#16a34a; --err:#dc2626; --warn:#d97706;
+}
+
+html[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#000000; --fg:#f5f5f5;
+  --fg-soft:rgba(245,245,245,.62); --fg-faint:rgba(245,245,245,.32);
+  --track:rgba(245,245,245,.12);
+  --card-bg:rgba(255,255,255,.055); --card-bd:rgba(255,255,255,.10);
+  --card-shadow:none;
+  --icon-bg-a:#111111; --icon-bg-b:#080808;
+  --icon-bd:rgba(255,255,255,.16); --icon-fg:#f5f5f5;
+  --icon-shadow:none;
+  --dock-bg:rgba(255,255,255,.045); --dock-bd:rgba(255,255,255,.10);
+  --tab-bg:rgba(255,255,255,.055); --tab-bd:rgba(255,255,255,.09);
+  --bubble-bg:rgba(255,255,255,.075);
+  --bubble-them:rgba(255,255,255,.11); --bubble-them-fg:#f5f5f5;
+  --bubble-me:#f5f5f5; --bubble-me-fg:#000000;
+  /* Chat message tokens intentionally stay fixed for chat visual consistency in dark mode. */
+  --chat-bubble-sent-bg:#95EC69; --chat-bubble-received-bg:#ffffff; --chat-bubble-fg:#000000;
+  --chat-file-bg:#2A2A2C; --chat-file-fg:#F5F5F5; --chat-file-icon-bg:#3A3A3C; --chat-file-icon-fg:#F5F5F5; --chat-file-meta:rgba(234,234,234,.55);
+  --chat-image-text-bg:#2A2A2C; --chat-image-text-fg:#EAEAEA; --chat-image-text-border:rgba(0,0,0,.42);
+  --wp-a:rgba(255,255,255,.07); --wp-b:rgba(255,255,255,.03);
+  --wallpaper-bg:#000000;
+  --home-fg:#f5f5f5; --home-soft:rgba(245,245,245,.56); --home-faint:rgba(245,245,245,.30);
+  --widget-surface:#131315; --home-surface:rgba(255,255,255,.045); --home-surface-soft:rgba(255,255,255,.025);
+  --home-border:rgba(255,255,255,.10); --home-border-strong:rgba(255,255,255,.17);
+  --tile-bg:#0a0a0a; --tile-border:rgba(255,255,255,.18); --tile-fg:#f5f5f5;
+  --cal-glass-base:.20; --cal-glass-edge:.20;
+  --ok:#22c55e; --err:#ef4444; --warn:#f59e0b;
+}
+
+@media (prefers-color-scheme: dark){
+html:not([data-theme]){
+    color-scheme: dark;
+    --bg:#000000; --fg:#f5f5f5;
+    --fg-soft:rgba(245,245,245,.62); --fg-faint:rgba(245,245,245,.32);
+    --track:rgba(245,245,245,.12);
+    --card-bg:rgba(255,255,255,.055); --card-bd:rgba(255,255,255,.10);
+    --card-shadow:none;
+    --icon-bg-a:#111111; --icon-bg-b:#080808;
+    --icon-bd:rgba(255,255,255,.16); --icon-fg:#f5f5f5; --icon-shadow:none;
+    --dock-bg:rgba(255,255,255,.045); --dock-bd:rgba(255,255,255,.10);
+    --tab-bg:rgba(255,255,255,.055); --tab-bd:rgba(255,255,255,.09);
+    --bubble-bg:rgba(255,255,255,.075); --bubble-them:rgba(255,255,255,.11); --bubble-them-fg:#f5f5f5;
+  --bubble-me:#f5f5f5; --bubble-me-fg:#000000;
+  /* Chat message tokens intentionally stay fixed for chat visual consistency in dark mode. */
+  --chat-bubble-sent-bg:#95EC69; --chat-bubble-received-bg:#ffffff; --chat-bubble-fg:#000000;
+  --chat-file-bg:#2A2A2C; --chat-file-fg:#F5F5F5; --chat-file-icon-bg:#3A3A3C; --chat-file-icon-fg:#F5F5F5; --chat-file-meta:rgba(234,234,234,.55);
+  --chat-image-text-bg:#2A2A2C; --chat-image-text-fg:#EAEAEA; --chat-image-text-border:rgba(0,0,0,.42);
+    --wp-a:rgba(255,255,255,.07); --wp-b:rgba(255,255,255,.03);
+    --wallpaper-bg:#000000;
+    --home-fg:#f5f5f5; --home-soft:rgba(245,245,245,.56); --home-faint:rgba(245,245,245,.30);
+    --widget-surface:#131315; --home-surface:rgba(255,255,255,.045); --home-surface-soft:rgba(255,255,255,.025);
+    --home-border:rgba(255,255,255,.10); --home-border-strong:rgba(255,255,255,.17);
+    --tile-bg:#0a0a0a; --tile-border:rgba(255,255,255,.18); --tile-fg:#f5f5f5;
+  --cal-glass-base:.20; --cal-glass-edge:.20;
+  }
+}
+
+*,*::before,*::after{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+html,body{ height:100%; margin:0; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
+
+body{
+  background: var(--bg); color: var(--fg);
+  font-weight: var(--island-fw-400); /* 全局默认字重：未单独声明字重的文字都跟随「字重」拉条 */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  overflow: hidden; overscroll-behavior: none;
+}
+
+/* 屏幕比例 ≠ 100%：整个岛屿作为一块整体缩放。body 先按 1/比例 放大尺寸，再 scale 回来，刚好铺满屏幕；
+ * body 带 transform 后，里面所有 position:fixed 的页面/弹层也都以 body 为参照，一起缩放。 */
+html[data-scaled] body{
+  position:fixed; left:0; top:0; height:auto;
+  width:calc(100vw / var(--island-scale)); height:calc(100dvh / var(--island-scale));
+  transform:scale(var(--island-scale)); transform-origin:0 0;
+}
+
+/* ===== iOS 主屏幕 App（PWA）视口修正 =====
+ * 症状：状态栏已穿透，但底栏整体被抬起、底下留一大片空白（布局视口比真实屏幕矮了状态栏那一截）。
+ * 做法：js-core-viewport.js 只在「iOS + 已添加到主屏幕」时写入 --app-h（真实整屏高度）并给 <html> 打 data-vh-fix。
+ * 此时 <body> 固定为整屏大小，并带 transform 成为所有 position:fixed 层（壁纸 / 各 App / 弹层 / 底栏）的参照，
+ * 它们一律以「真正的整屏」为准：顶部穿透状态栏（内容用 safe-area-inset-top 避让），底部贴到屏幕底边（用 safe-area-inset-bottom 避让手势条）。
+ * 浏览器标签页、安卓、APK 没有 data-vh-fix，下面的规则完全不生效。 */
+html[data-vh-fix]{ height:var(--app-h); background:var(--bg); }
+html[data-vh-fix] body{
+  position:fixed; left:0; top:0; width:100%; height:var(--app-h);
+  transform:translateZ(0); overflow:hidden;
+}
+html[data-vh-fix][data-scaled] body{
+  width:calc(100vw / var(--island-scale)); height:calc(var(--app-h) / var(--island-scale));
+  transform:scale(var(--island-scale)); transform-origin:0 0;
+}
+html[data-vh-fix] .home{ height:100%; min-height:0; }
+
+/* 浏览器默认的加粗标签（<strong>/<b>/表头/小标题）原本固定 700，不会随字重拉条变化；这里统一接入变量。
+ * 特异性最低，任何带 class 的单独字重声明仍然优先。 */
+strong,b,th,h4,h5,h6{ font-weight:var(--island-fw-700); }
+
+select,optgroup,option{ font:inherit; }
+
+button{ font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; -webkit-tap-highlight-color: transparent; }
+
+input,textarea{ font:inherit; color:inherit; background:none; border:0; outline:none; -webkit-tap-highlight-color: transparent; }
+
+ul{ list-style:none; margin:0; padding:0; }
+
+h1,h2,h3,p{ margin:0; font-weight:inherit; }
+
+/* 启动层 · 岛屿拱门
+ * 日出（深色主题为月夜）时分，一座小岛从海平线浮起：
+ * 拱门窗由下向上打开 → 太阳 / 月牙升起 → 小岛浮出 → 倒影、涟漪与碎光 → 字标落定 → 淡出。
+ * 画面是一整张内联 SVG（自带裁切，iOS Safari 不会漏出边角），其余全部为纯 CSS 动画；不依赖图片和外部字体。 */
+.boot{
+  --fit:1;
+  --b-ring:var(--home-border-strong);
+  position:fixed; inset:0; z-index:100; display:grid; place-items:center; overflow:hidden;
+  background:var(--bg); color:var(--home-fg);
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,"Songti SC","Noto Serif CJK SC","Source Han Serif SC","Noto Serif SC",Georgia,serif;
+  animation:bootLeave .7s 2.45s cubic-bezier(.4,0,.2,1) forwards;
+  will-change:opacity;   /* 淡出只在合成器线程上做，不触发下面主屏幕重绘 */
+}
+
+/* 淡出前定格循环动画（脚本在约 2.2s 加上 is-calm） */
+.boot.is-calm .s-mist, .boot.is-calm .s-rip, .boot.is-calm .gl, .boot.is-calm .s-star,
+.boot.is-calm .s-bird, .boot.is-calm .boot-status i{ animation-play-state:paused; }
+
+html[data-theme="dark"] .boot{
+  --b-ring:rgba(255,255,255,.4);
+}
+
+@media (prefers-color-scheme: dark){
+  html:not([data-theme]) .boot{
+    --b-ring:rgba(255,255,255,.4);
+  }
+}
+
+/* 适配不同屏幕：矮屏（iPhone SE / 横向 / 小窗口）整体缩小，平板与大屏略放大 */
+@media (max-height:720px){ .boot{ --fit:.88; } }
+@media (max-height:600px){ .boot{ --fit:.74; } }
+@media (max-width:340px){ .boot{ --fit:.86; } }
+@media (min-width:700px) and (min-height:860px){ .boot{ --fit:1.22; } }
+
+.boot-fit{ transform:scale(var(--fit)); }
+
+.boot-stage{
+  position:relative; display:flex; flex-direction:column; align-items:center;
+  animation:bootStageLeave .7s 2.45s cubic-bezier(.4,0,.2,1) forwards;
+}
+
+/* 拱门框：外圈极细线 + 内部画面 */
+.boot-frame{
+  position:relative; width:150px; height:198px;
+  opacity:0; animation:bootFrameIn 1s .1s cubic-bezier(.22,1,.36,1) forwards;
+}
+
+.boot-frame::before{
+  content:''; position:absolute; inset:-10px; border:1px solid var(--b-ring);
+  border-radius:85px 85px 30px 30px; opacity:0; transform:scale(.94);
+  animation:bootRingIn 1.2s .45s cubic-bezier(.22,1,.36,1) forwards;
+}
+
+/* 拱门"由下向上打开"：原先动画 clip-path（只能在主线程上重绘，脚本一加载就掉帧），
+ * 现在改为一块与背景同色的幕布做 scaleY 收起（纯 transform，由合成器线程执行，主线程忙时也不卡）。 */
+.boot-arch{
+  position:absolute; inset:0; overflow:hidden;
+  border-radius:75px 75px 20px 20px;
+}
+
+.boot-arch::after{
+  content:''; position:absolute; inset:-1px; background:var(--bg);
+  transform-origin:50% 0; will-change:transform;
+  animation:bootCurtain 1.15s .15s cubic-bezier(.65,0,.2,1) forwards;
+}
+
+.boot-scene{ position:absolute; left:0; top:0; width:150px; height:198px; display:block; contain:layout paint style; }
+
+.boot-scene--night{ display:none; }
+html[data-theme="dark"] .boot-scene--day{ display:none; }
+html[data-theme="dark"] .boot-scene--night{ display:block; }
+@media (prefers-color-scheme: dark){
+  html:not([data-theme]) .boot-scene--day{ display:none; }
+  html:not([data-theme]) .boot-scene--night{ display:block; }
+}
+
+.s-rise{ opacity:0; animation:bootRise 2s .55s cubic-bezier(.16,.84,.3,1) forwards; }
+.s-isle{ opacity:0; animation:bootEmerge 1.4s .95s cubic-bezier(.16,.84,.3,1) forwards; }
+.s-refl{ opacity:0; animation:bootFade .9s 1.5s ease-out forwards; }
+.s-mist{ animation:bootMist 6s steps(16,end) infinite alternate; }
+
+.s-rip{
+  opacity:0; transform-box:fill-box; transform-origin:center; transform:scale(.3);
+  animation:bootRip 2.8s 1.6s cubic-bezier(.2,.6,.3,1) infinite;
+}
+
+.gl{
+  fill-opacity:0; transform-box:fill-box; transform-origin:center;
+  animation:bootGlit 2.4s 1.6s steps(8,end) infinite alternate;
+}
+
+.s-star{ opacity:0; animation:bootTwinkle 3.2s 0s steps(8,end) infinite alternate; }
+
+.s-bird{ opacity:0; animation:bootBird 7s 1.6s steps(28,end) infinite alternate; }
+.s-bird-2{ animation-delay:2.4s; animation-duration:8s; }
+
+/* 字标 */
+.boot-word{
+  display:flex; margin-top:40px; margin-right:-.5em;
+  font-size:27px; font-weight:var(--island-fw-300); line-height:1; letter-spacing:.5em; color:var(--home-fg);
+}
+
+.boot-word span{
+  display:inline-block; opacity:0; transform:translateY(8px); will-change:transform,opacity;
+  animation:bootChar 1s cubic-bezier(.22,1,.36,1) forwards;
+}
+
+.boot-word span:nth-child(1){ animation-delay:1.25s; }
+.boot-word span:nth-child(2){ animation-delay:1.42s; }
+
+.boot-sub{
+  margin-top:13px; margin-right:-.3em; font-size:13px; font-style:italic; font-weight:var(--island-fw-400);
+  letter-spacing:.3em; color:var(--home-soft);
+  opacity:0; animation:bootFadeUp .9s 1.6s ease-out forwards;
+}
+
+.boot-status{
+  position:absolute; left:0; right:0; bottom:calc(env(safe-area-inset-bottom,0px) + 8%);
+  text-align:center; font-size:10.5px; letter-spacing:.42em; text-indent:.42em; color:var(--home-faint);
+  opacity:0; animation:bootFadeUp .8s 1.9s ease-out forwards;
+}
+
+.boot-status i{
+  display:inline-block; width:3px; height:3px; margin-left:2px; border-radius:50%;
+  background:currentColor; vertical-align:middle; opacity:.2;
+  animation:bootDot 1.4s ease-in-out infinite;
+}
+
+.boot-status i:nth-of-type(2){ animation-delay:.18s; }
+.boot-status i:nth-of-type(3){ animation-delay:.36s; }
+
+@keyframes bootFrameIn{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+@keyframes bootRingIn{ to{opacity:1; transform:none} }
+@keyframes bootCurtain{ from{ transform:scaleY(1) } to{ transform:scaleY(0) } }
+@keyframes bootRise{ 0%{opacity:0; transform:translateY(40px)} 22%{opacity:1} 100%{opacity:1; transform:translateY(0)} }
+@keyframes bootEmerge{ 0%{opacity:0; transform:translateY(16px)} 35%{opacity:1} 100%{opacity:1; transform:translateY(0)} }
+@keyframes bootFade{ to{opacity:1} }
+@keyframes bootMist{ from{transform:translateX(-4px)} to{transform:translateX(4px)} }
+@keyframes bootRip{ 0%{opacity:0; transform:scale(.3)} 20%{opacity:.75} 100%{opacity:0; transform:scale(1.18)} }
+@keyframes bootGlit{ 0%{fill-opacity:.12; transform:scaleX(.8)} 100%{fill-opacity:1; transform:scaleX(1)} }
+@keyframes bootTwinkle{ from{opacity:.15} to{opacity:.9} }
+@keyframes bootBird{ 0%{opacity:0; transform:translate(10px,3px)} 25%{opacity:.6} 75%{opacity:.6} 100%{opacity:0; transform:translate(-12px,-3px)} }
+@keyframes bootChar{ to{opacity:1; transform:none} }
+@keyframes bootFadeUp{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+@keyframes bootDot{ 0%,100%{opacity:.2} 50%{opacity:.9} }
+@keyframes bootStageLeave{ to{transform:scale(1.035)} }
+@keyframes bootLeave{ to{opacity:0; visibility:hidden; pointer-events:none} }
+
+html.pm-open{ --pm-chat-head-bg:#ededed; --pm-chat-head-fg:#171717; }
+
+html[data-theme="dark"].pm-open{ --pm-chat-head-bg:#111111; --pm-chat-head-fg:#f5f5f5; }
+
+@media (prefers-reduced-motion: reduce){
+*,*::before,*::after{
+    animation-duration:.001ms !important; animation-delay:0s !important;
+    animation-iteration-count:1 !important; transition-duration:.001ms !important;
+  }
+}
+

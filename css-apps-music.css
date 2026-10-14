@@ -1,0 +1,104 @@
+/* 岛屿 · 音乐 · 桌面「音乐」小组件（2×2 黑胶唱片播放器：唱片中间的图片可导入本地图片）
+ * 与 js-apps-music.js 对应。 */
+
+.home-music-widget{ display:block; grid-column:span 2; grid-row:span 2; min-width:0; min-height:0; }
+
+.home[data-widget-music="off"] .home-music-widget{ display:none; }
+
+.music-widget{
+  position:relative; box-sizing:border-box; width:100%; height:100%;
+  display:flex; flex-direction:column; padding:9px 8px 6px; overflow:hidden;
+  border-radius:24px; background:none; border:0; color:var(--home-fg);
+}
+
+/* 唱片区：吃掉控制栏以外的全部空间；唱片取宽高中较小者，保持正圆 */
+.vinyl-stage{
+  position:relative; flex:1 1 0; min-height:0; min-width:0;
+  display:grid; place-items:center; container-type:size;
+}
+
+.vinyl-disc{
+  position:relative; display:grid; place-items:center; border-radius:50%;
+  height:100%; aspect-ratio:1 / 1; max-width:100%;
+  width:min(100cqw,100cqh); height:min(100cqw,100cqh);
+  background:
+    radial-gradient(circle at 50% 50%, transparent 0 34%, rgba(255,255,255,.05) 34.4%, transparent 35% ),
+    repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.045) 0 .6px, rgba(0,0,0,0) .6px 2.4px),
+    conic-gradient(from 25deg, #0b0b0c, #1d1e20 12%, #0b0b0c 26%, #0b0b0c 50%, #1d1e20 62%, #0b0b0c 76%, #0b0b0c);
+  box-shadow:0 3px 10px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.04);
+  animation:vinylSpin 6s linear infinite; animation-play-state:paused;
+  will-change:transform;
+}
+
+.music-widget[data-playing="on"] .vinyl-disc{ animation-play-state:running; }
+
+@keyframes vinylSpin{ to{ transform:rotate(360deg); } }
+
+/* 唱片中间的图片（点击导入本地图片） */
+.vinyl-label{
+  position:relative; width:56%; height:56%; padding:0; border:0; border-radius:50%; overflow:hidden;
+  background:#2a2c30; color:rgba(255,255,255,.55); display:grid; place-items:center;
+  box-shadow:0 0 0 2px rgba(0,0,0,.55); transition:opacity .2s ease;
+}
+
+.vinyl-label-img{ position:absolute; inset:0; width:100%; height:100%; display:block; object-fit:cover; border-radius:50%; }
+
+.vinyl-label-img[hidden],.vinyl-label-empty[hidden]{ display:none; }
+
+.vinyl-label-empty{ display:grid; place-items:center; }
+
+.vinyl-label-empty svg{ width:26%; height:26%; min-width:18px; min-height:18px; display:block; }
+
+/* 夜间与桌面图标图片一致：跟随「夜间调暗」设置 */
+html[data-theme="dark"] .home[data-dim-dark-wallpaper="on"] .vinyl-label-img{ filter:brightness(var(--dark-icon-brightness,.58)); }
+
+/* 唱臂：支点在右上角，播放时落到唱片上，暂停时抬起 */
+.vinyl-arm{
+  position:absolute; top:-1%; right:3%; width:25%; height:76%; pointer-events:none;
+  transform-origin:75% 9%; transform:rotate(-12deg);
+  transition:transform .6s cubic-bezier(.4,0,.2,1);
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));
+}
+
+.vinyl-arm svg{ width:100%; height:100%; display:block; overflow:visible; }
+
+.music-widget[data-playing="on"] .vinyl-arm{ transform:rotate(0deg); }
+
+.music-controls{ flex:none; display:flex; align-items:center; justify-content:space-between; margin-top:4px; padding:0 2px; }
+
+.m-btn{ width:26px; height:26px; flex:none; display:grid; place-items:center; border-radius:50%; color:var(--music-ctl,var(--home-fg)); }
+
+.m-btn svg{ width:15px; height:15px; display:block; }
+
+.m-like.is-on{ color:#e5484d; }
+
+.m-like.is-on svg path{ fill:currentColor; }
+
+.m-play{ width:30px; height:30px; background:var(--music-ctl,var(--home-fg)); color:var(--music-ctl-inv,var(--bg)); box-shadow:none; }
+
+/* 按钮颜色：默认跟随主题；选「黑」「白」后，喜欢 / 上一首 / 播放 / 下一首 / 列表一起变色（已喜欢的红心仍保持红色） */
+.home[data-music-ctl="black"]{ --music-ctl:#111111; --music-ctl-inv:#ffffff; }
+.home[data-music-ctl="white"]{ --music-ctl:#ffffff; --music-ctl-inv:#111111; }
+
+.m-play svg{ width:13px; height:13px; }
+
+/* 紧凑模式（组件高度 < 150px，例如关闭图标名称）：收紧留白，让唱片保持可辨识的大小 */
+.home[data-grid-compact="on"] .music-widget{ padding:7px 7px 4px; }
+
+.home[data-grid-compact="on"] .music-controls{ margin-top:2px; }
+
+.home[data-grid-compact="on"] .m-btn{ width:24px; height:24px; }
+
+.home[data-grid-compact="on"] .m-play{ width:27px; height:27px; }
+
+@media (prefers-reduced-motion: reduce){
+  .vinyl-disc{ animation-duration:20s; }
+  .vinyl-arm{ transition:none; }
+}
+
+/* 背景样式「毛玻璃」：默认样式不变，选了毛玻璃才生效。变量由 applyWidgetGlassStyle 写在 .home 上，规则与日历一致。 */
+.home[data-music-bg="glass"] .music-widget{
+  background:rgba(255,255,255,calc(var(--cal-glass-base,.72) * var(--music-glass-k,.6)));
+  backdrop-filter:blur(var(--music-glass-blur,20px)) saturate(1.6); -webkit-backdrop-filter:blur(var(--music-glass-blur,20px)) saturate(1.6);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,var(--cal-glass-edge,.5)), inset 0 1px 0 rgba(255,255,255,calc(var(--cal-glass-edge,.5) + .1));
+}

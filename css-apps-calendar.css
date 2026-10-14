@@ -1,0 +1,98 @@
+/* 岛屿 · 日历 · 桌面「日历」小组件（4×2：左半边图片，右半边实时月历）
+ * 与 js-apps-calendar.js 对应。「日历」App 本体开发时，页面样式也写在这个文件里。 */
+
+.home-calendar-widget{ display:block; grid-column:1 / -1; grid-row:span 2; min-width:0; min-height:0; }
+
+.home[data-widget-calendar="off"] .home-calendar-widget{ display:none; }
+
+/* 占主屏幕网格 4 列 × 2 行；--cal-widget-h（js 写入的 2 行高度）只用来限制左侧图片的最大边长。 */
+.cal-widget{
+  /* 左右留白：--cal-pad-x 为「图片左缘」和「日历数字右缘」到组件边缘的距离，两边视觉相等。
+   * 日历每格数字是居中的，数字右缘比格子右缘内缩约 --cal-inset，所以右侧 padding 相应减去它。 */
+  --cal-pad-x:20px; --cal-inset:4.5px; --cal-pad-r:calc(var(--cal-pad-x) - var(--cal-inset));
+  position:relative; box-sizing:border-box; width:100%; height:100%;
+  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); grid-template-rows:minmax(0,1fr); gap:12px;
+  padding:12px var(--cal-pad-r) 12px var(--cal-pad-x); border-radius:24px; overflow:hidden;
+  background:var(--widget-surface,var(--home-surface)); border:0; color:var(--home-fg);
+  backdrop-filter:blur(16px) saturate(.65); -webkit-backdrop-filter:blur(16px) saturate(.65);
+}
+
+/* 背景样式「毛玻璃」：默认样式保持不变，只有选了毛玻璃才生效。
+ * --cal-glass-blur（模糊度，px）与 --cal-glass-k（= 1 − 透明度）由 applyCalendarWidgetStyle 写在 .home 上；
+ * 白色底的实际不透明度 = 主题基准 × k：透明度 0% 最实，100% 完全通透，只剩模糊和边缘高光。
+ * 描边用 inset 阴影而不是 border，避免改变内部排版尺寸。 */
+.home[data-cal-bg="glass"] .cal-widget{
+  background:rgba(255,255,255,calc(var(--cal-glass-base,.72) * var(--cal-glass-k,.6)));
+  backdrop-filter:blur(var(--cal-glass-blur,20px)) saturate(1.6); -webkit-backdrop-filter:blur(var(--cal-glass-blur,20px)) saturate(1.6);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,var(--cal-glass-edge,.5)), inset 0 1px 0 rgba(255,255,255,calc(var(--cal-glass-edge,.5) + .1));
+}
+
+/* 背景样式「黑」「白」：纯色底板，没有描边、没有阴影、不再做模糊。
+ * 文字颜色直接在组件内部换一套变量：黑底配白字，白底配黑字，「今天」的反色胶囊也跟着自动反过来。 */
+.home[data-cal-bg="black"] .cal-widget,
+.home[data-cal-bg="white"] .cal-widget{ border:0; box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none; }
+.home[data-cal-bg="black"] .cal-widget{ background:#151515; --home-fg:#f5f5f5; --home-faint:rgba(255,255,255,.5); --bg:#151515; --tile-bg:#2a2a2a; }
+.home[data-cal-bg="white"] .cal-widget{ background:#ffffff; --home-fg:#111111; --home-faint:rgba(0,0,0,.45); --bg:#ffffff; --tile-bg:#ececec; }
+
+/* 左半边：正方形图片，圆角 10px */
+.cal-photo{
+  position:relative; align-self:center; justify-self:start; box-sizing:border-box;
+  width:100%; max-width:calc(var(--cal-widget-h,176px) - 24px); aspect-ratio:1 / 1;
+  border-radius:10px; overflow:hidden; background:var(--tile-bg); border:0; color:var(--home-faint);
+  display:grid; place-items:center; transition:opacity .2s ease;
+}
+
+.cal-photo-img{ position:absolute; inset:0; width:100%; height:100%; display:block; object-fit:cover; border-radius:inherit; }
+
+.cal-photo-img[hidden],.cal-photo-empty[hidden]{ display:none; }
+
+.cal-photo-empty{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+
+.cal-photo-empty svg{ width:24px; height:24px; display:block; }
+
+.cal-photo-empty em{ font-style:normal; font-size:calc(10px * var(--island-font-size-scale)); font-weight:var(--island-fw-550); letter-spacing:.06em; }
+
+/* 夜间与桌面图标图片一致：跟随「夜间调暗」设置 */
+html[data-theme="dark"] .home[data-dim-dark-wallpaper="on"] .cal-photo-img{ filter:brightness(var(--dark-icon-brightness,.58)); }
+
+/* 右半边：月历 */
+.cal-month{ min-width:0; min-height:0; display:flex; flex-direction:column; overflow:hidden; }
+
+.cal-head{ flex:none; display:flex; align-items:baseline; justify-content:space-between; gap:6px; padding:0 var(--cal-inset) 5px 2px; }
+
+.cal-head strong{ font-size:calc(15px * var(--island-font-size-scale)); font-weight:var(--island-fw-650); line-height:1.1; color:var(--home-fg); }
+
+.cal-head span{ font-size:calc(10px * var(--island-font-size-scale)); font-weight:var(--island-fw-600); letter-spacing:.08em; color:var(--home-faint); }
+
+.cal-week{ flex:none; display:grid; grid-template-columns:repeat(7,1fr); padding-bottom:3px; }
+
+.cal-week span{ text-align:center; font-size:calc(9px * var(--island-font-size-scale)); font-weight:var(--island-fw-600); line-height:1.4; color:var(--home-faint); }
+
+.cal-days{ flex:1 1 0; min-height:0; display:grid; grid-template-columns:repeat(7,1fr); grid-template-rows:repeat(var(--cal-rows,6),minmax(0,1fr)); }
+
+.cal-day{
+  min-width:0; min-height:0; display:grid; place-items:center; border-radius:5px;
+  font-size:calc(10.5px * var(--island-font-size-scale)); font-weight:var(--island-fw-500); line-height:1;
+  font-variant-numeric:tabular-nums; color:var(--home-fg);
+}
+
+.cal-day.is-today{ background:var(--home-fg); color:var(--bg); font-weight:var(--island-fw-650); }
+
+/* 设置 · 默认小组件：日历卡片里的图片操作行 */
+.widget-card-actions{ display:flex; align-items:center; gap:8px; }
+
+.widget-card-state{ flex:1 1 auto; min-width:0; font-size:calc(11px * var(--island-font-size-scale)); color:var(--fg-faint); }
+
+.widget-card-actions .icon-library-btn{ flex:none; padding:7px 14px; }
+
+/* 设置 · 日历背景样式（默认 / 毛玻璃）及毛玻璃的两条拉条 */
+.cal-style-controls{ padding-top:2px; }
+
+.widget-chips.is-two{ grid-template-columns:repeat(2,1fr); }
+.widget-chips.is-four{ grid-template-columns:repeat(4,1fr); }
+
+.cal-glass-controls[hidden]{ display:none; }
+
+.cal-glass-controls{ display:grid; margin-top:2px; }
+
+.cal-glass-row.dock-control-row{ grid-template-columns:56px minmax(0,1fr) 48px; min-height:48px; padding:10px 2px; }
