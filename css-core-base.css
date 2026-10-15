@@ -117,14 +117,17 @@ html[data-scaled] body{
 }
 
 /* ===== iOS 主屏幕 App（PWA）视口修正 =====
- * 症状：状态栏已穿透，但底栏整体被抬起、底下留一大片空白（布局视口比真实屏幕矮了状态栏那一截）。
- * 做法：js-core-viewport.js 只在「iOS + 已添加到主屏幕」时写入 --app-h（真实整屏高度）并给 <html> 打 data-vh-fix。
- * 此时 <body> 固定为整屏大小，并带 transform 成为所有 position:fixed 层（壁纸 / 各 App / 弹层 / 底栏）的参照，
- * 它们一律以「真正的整屏」为准：顶部穿透状态栏（内容用 safe-area-inset-top 避让），底部贴到屏幕底边（用 safe-area-inset-bottom 避让手势条）。
- * 浏览器标签页、安卓、APK 没有 data-vh-fix，下面的规则完全不生效。 */
-html[data-vh-fix]{ height:var(--app-h); background:transparent; }
+ * js-core-viewport.js 只在「iOS + 已添加到主屏幕」时给 <html> 打 data-vh-fix，并写入 --app-h（整屏高度）、--app-sat（状态栏高度）。
+ * html 比视口高出一个状态栏，脚本把文档滚到底；<body> 绝对定位、整屏高，随之上移，正好铺满整个屏幕：
+ * 顶部在状态栏下透出页面内容，底部贴到屏幕底边。body 带 transform，是壁纸 / 各 App / 弹层等 fixed 层的参照。
+ * 内容用 --island-sat 让开状态栏。浏览器标签页、安卓、APK 没有 data-vh-fix，下面的规则完全不生效。 */
+html[data-ios][data-standalone]{ overscroll-behavior:none; }
+html[data-vh-fix]{
+  height:var(--app-h); overflow:hidden; background:var(--wallpaper-bg);
+  --island-sat:max(env(safe-area-inset-top, 0px), var(--app-sat, 0px));
+}
 html[data-vh-fix] body{
-  position:fixed; left:0; top:0; width:100%; height:var(--app-h);
+  position:absolute; left:0; top:0; width:100%; height:var(--app-h);
   transform:translateZ(0); overflow:hidden; background:transparent;
 }
 html[data-vh-fix][data-scaled] body{
@@ -132,14 +135,8 @@ html[data-vh-fix][data-scaled] body{
   transform:scale(var(--island-scale)); transform-origin:0 0;
 }
 html[data-vh-fix] .home{ height:100%; min-height:0; }
-/* iOS 主屏幕 App：所有底栏（桌面 Dock、聊天输入栏、电话底栏等）在原 10px 基础上统一抬高到 70px，避开圆角与手势条。 */
-html[data-ios][data-standalone]{ --island-bottom-lift:10px; overscroll-behavior:none; }
-html[data-vh-fix][data-vhmode="2"]{ --island-sat:max(env(safe-area-inset-top, 0px), var(--app-sat, 0px)); }
-
-/* 方案 C（data-vhmode="2"）：页面顶部不放“固定定位 + 纯色”的东西，系统就没有颜色可取来给状态栏区域垫底。 */
-html[data-vh-fix][data-vhmode="2"]{ overflow:hidden; background:var(--wallpaper-bg); }
-html[data-vh-fix][data-vhmode="2"] body{ position:absolute; }
-html[data-vh-fix][data-vhmode="2"] .wallpaper{ position:absolute; background-color:transparent !important; }
+/* 壁纸的纯色底交给 html（见上），这里透明，避免系统从顶部的纯色固定层取色去垫状态栏。 */
+html[data-vh-fix] .wallpaper{ position:absolute; background-color:transparent !important; }
 
 /* iOS 主屏幕 App：状态栏 + 页面顶栏合成一整块，没有色差、没有分割。
  * 各页面顶栏（聊天 / 电话 / 世界书 / 位置 / 语音通话 / 转发记录）原本自带底色，和页面底色不一样，
