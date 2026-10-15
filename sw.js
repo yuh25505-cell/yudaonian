@@ -1,7 +1,7 @@
 const CACHE_VERSION = '__CACHE_VERSION__';
 const CACHE_NAME = `island-${CACHE_VERSION}`;
 // 由 stamp-version.mjs 自动写入：每次发布内容变化，sw.js 的字节也跟着变，浏览器就能发现新版本。
-const BUILD_STAMP = '1.63.0-f9a3ca5d';
+const BUILD_STAMP = '1.63.0-215649b1';
 const APP_SHELL = [
   './',
   './index.html',
