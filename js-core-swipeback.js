@@ -242,7 +242,7 @@
     /* iOS 主屏幕 App：一旦压入历史记录，系统自己的“边缘右滑返回”（带页面快照动画）会和这里的跟手滑动同时触发，
      * 画面就会闪、卡、关两次。主屏幕 App 本来就没有返回键，只剩这套自己的手势，所以不压历史哨兵，让系统手势无事可做。
      * （html[data-vh-fix] 由 js-core-viewport.js 在 iOS 主屏幕 App 中打上） */
-    if (!nativeMode && document.documentElement.hasAttribute('data-vh-fix')) nativeMode = true;
+    if (!nativeMode && (document.documentElement.hasAttribute('data-ios') && document.documentElement.hasAttribute('data-standalone'))) nativeMode = true;
   }
 
   function handleBack(){
