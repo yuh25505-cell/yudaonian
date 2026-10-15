@@ -133,25 +133,19 @@ html[data-vh-fix] .home{ height:100%; min-height:0; }
 /* iOS 主屏幕 App：所有底栏（桌面 Dock、聊天输入栏、电话底栏等）在原 10px 基础上再抬高 40px，避开圆角与手势条。 */
 html[data-vh-fix]{ --island-bottom-lift:50px; }
 
-/* iOS 主屏幕 App：顶部状态栏区域透明。
- * 各页面顶栏（聊天 / 电话 / 世界书 / 位置 / 语音通话 等）原本把状态栏那一截也涂了自己的底色，看起来像状态栏单独一块背景。
- * 这里让顶栏的底色只铺在「状态栏以下的 52px 标题栏」，状态栏区域不涂色，透出各界面自己的页面背景 / 壁纸，
- * 于是整个岛屿的界面就是状态栏的背景。写成 html[data-vh-fix] body 前缀，特异性高于 html.pm-open .pm-head 等原规则。 */
+/* iOS 主屏幕 App：状态栏 + 页面顶栏合成一整块，没有色差、没有分割。
+ * 各页面顶栏（聊天 / 电话 / 世界书 / 位置 / 语音通话 / 转发记录）原本自带底色，和页面底色不一样，
+ * 与状态栏区域之间会出现一道色差分割。这里让顶栏整条（状态栏 + 52px 标题栏）完全透明，
+ * 状态栏的时间 / 信号 / 电量直接叠在页面本身的背景上，上下是同一块背景。
+ * 写成 html[data-vh-fix] body 前缀，特异性高于 html.pm-open .pm-head 等原规则。 */
 html[data-vh-fix] body .pm-head,
 html[data-vh-fix] body .pm-voice-call-head,
-html[data-vh-fix] body .pm-location-map-head{
-  background-color:transparent;
-  background-image:linear-gradient(var(--pm-chat-head-bg,var(--bg)),var(--pm-chat-head-bg,var(--bg)));
-  background-size:100% 52px; background-position:0 100%; background-repeat:no-repeat;
-}
+html[data-vh-fix] body .pm-location-map-head,
 html[data-vh-fix] body .phone-head,
-html[data-vh-fix] body .pm-forward-record-head{
-  background-color:transparent;
-  background-image:linear-gradient(var(--bg),var(--bg));
-  background-size:100% 52px; background-position:0 100%; background-repeat:no-repeat;
-}
+html[data-vh-fix] body .pm-forward-record-head,
 html[data-vh-fix] body .worldbook-head{
-  background-size:100% 52px; background-position:0 100%; background-repeat:no-repeat;
+  background:transparent; background-image:none;
+  -webkit-backdrop-filter:none; backdrop-filter:none; box-shadow:none;
 }
 
 /* 浏览器默认的加粗标签（<strong>/<b>/表头/小标题）原本固定 700，不会随字重拉条变化；这里统一接入变量。
