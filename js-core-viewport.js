@@ -80,22 +80,58 @@
   /* 输入框失焦（键盘收起）后重新量一次。 */
   d.addEventListener('focusout', function () { setTimeout(measure, 350); }, true);
 
-  /* 调试：地址后加 ?vhdebug=1 打开主屏幕 App，左上角会显示实测数值（截图发给开发者即可定位）。 */
-  function debugBadge() {
+  /* 诊断面板：已安装的主屏幕 App 会丢掉地址后面的 ?参数，所以不能靠地址打开。
+   * 打开方式（任选）：① 地址带 ?vhdebug=1（浏览器里）；② 在 App 里用【三根手指同时点一下屏幕】开 / 关（会记住）。
+   * 面板显示在屏幕上方偏下的位置，截图发给开发者即可。 */
+  var dbgBox = null, dbgTimer = 0, probe = null;
+  function sai() {
     try {
-      if (!/[?&]vhdebug=1/.test(location.search)) return;
-      var b = d.createElement('div');
-      b.style.cssText = 'position:fixed;left:6px;bottom:6px;z-index:99999;padding:4px 7px;border-radius:6px;' +
-        'background:rgba(0,0,0,.72);color:#0f0;font:10px/1.35 monospace;pointer-events:none;white-space:pre';
-      (d.body || root).appendChild(b);
-      var upd = function () {
-        var s = window.IslandViewport.state();
-        b.textContent = 'inner ' + s.innerH + ' / screen ' + s.screenH + '\nappH ' + s.appH + ' fix ' + s.fix + ' sa ' + s.standalone;
-      };
-      setInterval(upd, 500); upd();
-    } catch (e) {}
+      if (!probe) {
+        probe = d.createElement('div');
+        probe.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)';
+        (d.body || root).appendChild(probe);
+      }
+      var cs = getComputedStyle(probe);
+      return parseFloat(cs.paddingTop) + '/' + parseFloat(cs.paddingBottom);
+    } catch (e) { return '?'; }
   }
-  d.addEventListener('DOMContentLoaded', debugBadge);
+  function rectTop(sel) {
+    try { var el = d.querySelector(sel); if (!el) return '-'; var r = el.getBoundingClientRect(); return Math.round(r.top) + '~' + Math.round(r.bottom); } catch (e) { return '?'; }
+  }
+  function debugText() {
+    var s = window.IslandViewport.state(), vv = window.visualViewport;
+    var tc = d.querySelector('meta[name="theme-color"]');
+    return 'inner ' + s.innerW + 'x' + s.innerH + ' / screen ' + s.screenW + 'x' + s.screenH +
+      '\nappH ' + s.appH + ' fix ' + s.fix + ' standalone ' + s.standalone +
+      '\nnav.standalone ' + navigator.standalone + ' dm-full ' + (matchMedia('(display-mode: fullscreen)').matches) + ' dm-sa ' + (matchMedia('(display-mode: standalone)').matches) +
+      '\nsafe top/bottom ' + sai() +
+      '\nvv ' + (vv ? Math.round(vv.width) + 'x' + Math.round(vv.height) + ' off ' + Math.round(vv.offsetTop) : '-') + ' scrollY ' + Math.round(window.scrollY) +
+      '\nbody ' + rectTop('body') + ' wallpaper ' + rectTop('.wallpaper') + ' home ' + rectTop('.home') +
+      '\ntheme-color ' + (tc ? tc.getAttribute('content') : 'none') + ' sw ' + (navigator.serviceWorker && navigator.serviceWorker.controller ? 'on' : 'off');
+  }
+  function showDebug(on) {
+    try { localStorage.setItem('island-vhdebug', on ? '1' : '0'); } catch (e) {}
+    if (!on) {
+      if (dbgBox && dbgBox.parentNode) dbgBox.parentNode.removeChild(dbgBox);
+      dbgBox = null; clearInterval(dbgTimer); return;
+    }
+    if (dbgBox) return;
+    dbgBox = d.createElement('div');
+    dbgBox.style.cssText = 'position:fixed;left:6px;top:96px;z-index:2147483647;padding:5px 8px;border-radius:6px;' +
+      'background:rgba(0,0,0,.78);color:#0f0;font:10px/1.4 monospace;pointer-events:none;white-space:pre;max-width:96vw';
+    (d.body || root).appendChild(dbgBox);
+    var upd = function () { dbgBox.textContent = debugText(); };
+    dbgTimer = setInterval(upd, 500); upd();
+  }
+  function debugInit() {
+    var want = false;
+    try { want = /[?&]vhdebug=1/.test(location.search) || localStorage.getItem('island-vhdebug') === '1'; } catch (e) {}
+    if (want) showDebug(true);
+    d.addEventListener('touchstart', function (e) {
+      if (e.touches && e.touches.length === 3) showDebug(!dbgBox);
+    }, { passive: true });
+  }
+  d.addEventListener('DOMContentLoaded', debugInit);
 
   window.IslandViewport = {
     /* 供其它脚本（如系统栏取色）取"真正的整屏高度"。 */
@@ -105,7 +141,7 @@
       return {
         iPhone: isIPhone, standalone: isStandalone(), fix: root.hasAttribute('data-vh-fix'),
         appH: root.style.getPropertyValue('--app-h') || null,
-        innerH: window.innerHeight, screenH: screen.height, screenW: screen.width
+        innerH: window.innerHeight, innerW: window.innerWidth, screenH: screen.height, screenW: screen.width
       };
     }
   };
