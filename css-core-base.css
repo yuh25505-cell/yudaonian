@@ -133,7 +133,7 @@ html[data-vh-fix][data-scaled] body{
 }
 html[data-vh-fix] .home{ height:100%; min-height:0; }
 /* iOS 主屏幕 App：所有底栏（桌面 Dock、聊天输入栏、电话底栏等）在原 10px 基础上统一抬高到 70px，避开圆角与手势条。 */
-html[data-ios][data-standalone]{ --island-bottom-lift:70px; overscroll-behavior:none; }
+html[data-ios][data-standalone]{ --island-bottom-lift:40px; overscroll-behavior:none; }
 html[data-vh-fix][data-vhmode="2"]{ --island-sat:max(env(safe-area-inset-top, 0px), var(--app-sat, 0px)); }
 
 /* 方案 C（data-vhmode="2"）：页面顶部不放“固定定位 + 纯色”的东西，系统就没有颜色可取来给状态栏区域垫底。 */
