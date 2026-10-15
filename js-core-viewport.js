@@ -28,6 +28,15 @@
   if (isIOS) root.setAttribute('data-ios', '1');
   if (standalone) root.setAttribute('data-standalone', '1');
 
+  /* iOS 主屏幕 App：theme-color 会被系统拿来给状态栏区域单独上色（iOS 26 还会做渐变 / 模糊延伸），
+   * 这正是“状态栏有一块独立底色”的来源。这里直接把它移除，状态栏就只剩透明 + 时间 / 信号 / 电量。 */
+  if (isIOS && standalone) {
+    try {
+      var tcs = d.querySelectorAll('meta[name="theme-color"]');
+      for (var ti = 0; ti < tcs.length; ti++) tcs[ti].parentNode.removeChild(tcs[ti]);
+    } catch (e) {}
+  }
+
   var lastH = 0, timers = [];
 
   function editing() {

@@ -265,7 +265,8 @@
 
     /* 网页 / PWA：theme-color 跟随状态栏下方的真实颜色，浏览器会据此自动选黑 / 白图标。 */
     var hex = toHex(res.top);
-    if (hex !== last.hex) {
+    /* iOS 主屏幕 App 不写 theme-color（会给状态栏单独上色），状态栏保持透明 */
+    if (hex !== last.hex && !document.documentElement.hasAttribute('data-vh-fix')) {
       last.hex = hex;
       var meta = document.getElementById('themeColorMeta') || document.querySelector('meta[name="theme-color"]');
       if (meta) meta.setAttribute('content', hex);

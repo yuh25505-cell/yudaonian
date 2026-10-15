@@ -50,7 +50,7 @@
 
 .worldbook-new-btn svg{width:18px;height:18px;}
 
-.worldbook-body{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:18px 18px 34px;}
+.worldbook-body{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:18px 18px calc(var(--island-sab) + 34px);}
 
 .worldbook-body::-webkit-scrollbar{display:none;}
 

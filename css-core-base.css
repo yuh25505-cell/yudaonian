@@ -121,10 +121,10 @@ html[data-scaled] body{
  * 此时 <body> 固定为整屏大小，并带 transform 成为所有 position:fixed 层（壁纸 / 各 App / 弹层 / 底栏）的参照，
  * 它们一律以「真正的整屏」为准：顶部穿透状态栏（内容用 safe-area-inset-top 避让），底部贴到屏幕底边（用 safe-area-inset-bottom 避让手势条）。
  * 浏览器标签页、安卓、APK 没有 data-vh-fix，下面的规则完全不生效。 */
-html[data-vh-fix]{ height:var(--app-h); background:var(--bg); }
+html[data-vh-fix]{ height:var(--app-h); background:transparent; }
 html[data-vh-fix] body{
   position:fixed; left:0; top:0; width:100%; height:var(--app-h);
-  transform:translateZ(0); overflow:hidden;
+  transform:translateZ(0); overflow:hidden; background:transparent;
 }
 html[data-vh-fix][data-scaled] body{
   width:calc(100vw / var(--island-scale)); height:calc(var(--app-h) / var(--island-scale));
