@@ -30,9 +30,9 @@
    *   1 = 方案 B：完全信任系统给的视口（不做任何高度修正），状态栏颜色跟随页面顶部
    *   2 = 方案 C：在 A 的基础上去掉顶部“固定定位 + 纯色”，避免系统给状态栏区域垫色
    * 不同 iOS 版本对主屏幕 App 的处理不一样，先用这个现场试出哪个对，再固化成默认。 */
-  var vhmode = '0';
-  try { vhmode = localStorage.getItem('island-vhmode') || '0'; } catch (e) {}
-  if (vhmode !== '0' && vhmode !== '1' && vhmode !== '2') vhmode = '0';
+  var vhmode = '2';
+  try { vhmode = localStorage.getItem('island-vhmode') || '2'; } catch (e) {}
+  if (vhmode !== '0' && vhmode !== '1' && vhmode !== '2') vhmode = '2';
   root.setAttribute('data-vhmode', vhmode);
   if (isIOS) root.setAttribute('data-ios', '1');
   if (standalone) root.setAttribute('data-standalone', '1');
@@ -46,7 +46,7 @@
     } catch (e) {}
   }
 
-  var lastH = 0, timers = [];
+  var lastH = 0, lastSat = 0, timers = [];
 
   function editing() {
     var a = d.activeElement;
@@ -68,8 +68,32 @@
       lastH = h;
       root.style.setProperty('--app-h', h + 'px');
     }
+    /* iOS 27 主屏幕 App：系统把页面区域放在状态栏下方（视口比屏幕矮一个状态栏，safe-area-inset-top 还是 0）。
+     * 这一截高度就是“状态栏高度”，页面内容要自己让开它。 */
+    var sat = Math.max(0, Math.round(h - (window.innerHeight || h)));
+    if (sat !== lastSat) {
+      lastSat = sat;
+      root.style.setProperty('--app-sat', sat + 'px');
+    }
     if (!root.hasAttribute('data-vh-fix')) root.setAttribute('data-vh-fix', '1');
+    lockScroll();
   }
+
+  /* 模式 2：html 比视口高出 sat，文档因此有 sat 的可滚动距离。把文档滚到底（= sat），
+   * 绝对定位的 <body> 就整体上移 sat，正好铺满整个屏幕（顶部在状态栏之下透出内容，底部贴到屏幕底边）。
+   * 这和“键盘弹起时系统自己把文档滚上去”的效果一致，只是改成主动、常驻。 */
+  function lockScroll() {
+    if (vhmode !== '2' || !lastSat || editing()) return;
+    if (Math.abs((window.scrollY || 0) - lastSat) > 0.5) {
+      try { window.scrollTo(0, lastSat); } catch (e) {}
+    }
+  }
+  var lockQueued = false;
+  window.addEventListener('scroll', function () {
+    if (lockQueued) return;
+    lockQueued = true;
+    requestAnimationFrame(function () { lockQueued = false; lockScroll(); });
+  }, { passive: true });
 
   /* iOS 在启动 / 旋转 / 回到前台后，尺寸有时晚几百毫秒才更新：多补量几次。 */
   function settle() {
@@ -111,7 +135,7 @@
     var s = window.IslandViewport.state(), vv = window.visualViewport;
     var tc = d.querySelector('meta[name="theme-color"]');
     return 'inner ' + s.innerW + 'x' + s.innerH + ' / screen ' + s.screenW + 'x' + s.screenH +
-      '\nappH ' + s.appH + ' fix ' + s.fix + ' standalone ' + s.standalone +
+      '\nappH ' + s.appH + ' sat ' + s.sat + ' fix ' + s.fix + ' standalone ' + s.standalone +
       '\nnav.standalone ' + navigator.standalone + ' dm-full ' + (matchMedia('(display-mode: fullscreen)').matches) + ' dm-sa ' + (matchMedia('(display-mode: standalone)').matches) +
       '\nsafe top/bottom ' + sai() +
       '\nvv ' + (vv ? Math.round(vv.width) + 'x' + Math.round(vv.height) + ' off ' + Math.round(vv.offsetTop) : '-') + ' scrollY ' + Math.round(window.scrollY) +
@@ -163,7 +187,7 @@
     state: function () {
       return {
         iPhone: isIPhone, standalone: isStandalone(), fix: root.hasAttribute('data-vh-fix'),
-        appH: root.style.getPropertyValue('--app-h') || null,
+        appH: root.style.getPropertyValue('--app-h') || null, sat: root.style.getPropertyValue('--app-sat') || null,
         innerH: window.innerHeight, innerW: window.innerWidth, screenH: screen.height, screenW: screen.width
       };
     }

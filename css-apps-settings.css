@@ -7,7 +7,7 @@
 
 .settings-app.is-open{ display:block; }
 
-.settings-shell{ display:flex; flex-direction:column; width:100%; max-width:520px; height:100%; margin:0 auto; padding-top: env(safe-area-inset-top, 0px); }
+.settings-shell{ display:flex; flex-direction:column; width:100%; max-width:520px; height:100%; margin:0 auto; padding-top: var(--island-sat); }
 
 .settings-body{ position:relative; flex:1 1 auto; min-height:0; }
 
