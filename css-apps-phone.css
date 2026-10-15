@@ -75,7 +75,7 @@
 
 .phone-selection-delete:disabled{ opacity:.35; cursor:default; }
 
-.phone-list{ flex:1 1 auto; min-height:0; overflow:auto; padding:10px 12px calc(16px + env(safe-area-inset-bottom,0px)); -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.phone-list{ flex:1 1 auto; min-height:0; overflow:auto; padding:10px 12px calc(16px + var(--island-sab)); -webkit-overflow-scrolling:touch; scrollbar-width:none; }
 
 .phone-list::-webkit-scrollbar,.phone-detail-scroll::-webkit-scrollbar{ display:none; }
 
@@ -168,7 +168,7 @@
 
 .phone-empty span{ max-width:330px; margin-top:7px; font-size:calc(12px * var(--island-font-size-scale)); line-height:1.55; }
 
-.phone-detail-scroll{ flex:1 1 auto; min-height:0; overflow:auto; padding:16px 14px calc(28px + env(safe-area-inset-bottom,0px)); -webkit-overflow-scrolling:touch; }
+.phone-detail-scroll{ flex:1 1 auto; min-height:0; overflow:auto; padding:16px 14px calc(28px + var(--island-sab)); -webkit-overflow-scrolling:touch; }
 
 .phone-transcript-row{ display:flex; flex-direction:column; align-items:flex-start; margin:0 0 16px; }
 

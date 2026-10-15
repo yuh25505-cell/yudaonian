@@ -5,6 +5,7 @@
 :root{
   --island-font-size-scale:1;
   --island-scale:1;            /* 屏幕比例（全局缩放），由 js 写入 */
+  --island-sab:calc(env(safe-area-inset-bottom, 0px) + var(--island-bottom-lift, 10px) - 10px); /* 子页面/半屏弹窗/列表尾部用的「底部安全距离」：随底栏抬高量一起增大；抬高量为默认 10px 时等于 env(safe-area-inset-bottom) */
   --island-bottom-lift:10px;   /* 所有界面的底栏统一上移的距离 */
   --island-fw-300:300; --island-fw-400:400; --island-fw-500:500; --island-fw-520:520; --island-fw-550:550;
   --island-fw-600:600; --island-fw-650:650; --island-fw-680:680; --island-fw-700:700; --island-fw-720:720;
@@ -130,8 +131,8 @@ html[data-vh-fix][data-scaled] body{
   transform:scale(var(--island-scale)); transform-origin:0 0;
 }
 html[data-vh-fix] .home{ height:100%; min-height:0; }
-/* iOS 主屏幕 App：所有底栏（桌面 Dock、聊天输入栏、电话底栏等）在原 10px 基础上再抬高 40px，避开圆角与手势条。 */
-html[data-vh-fix]{ --island-bottom-lift:70px; }
+/* iOS 主屏幕 App：所有底栏（桌面 Dock、聊天输入栏、电话底栏等）在原 10px 基础上统一抬高到 70px，避开圆角与手势条。 */
+html[data-vh-fix]{ --island-bottom-lift:70px; overscroll-behavior:none; }
 
 /* iOS 主屏幕 App：状态栏 + 页面顶栏合成一整块，没有色差、没有分割。
  * 各页面顶栏（聊天 / 电话 / 世界书 / 位置 / 语音通话 / 转发记录）原本自带底色，和页面底色不一样，
