@@ -177,6 +177,11 @@ function renderHomeIconLibrary(){
     upload.type = 'button';
     upload.setAttribute('data-icon-upload', name);
     upload.textContent = '选择';
+    var urlBtn = document.createElement('button');
+    urlBtn.className = 'icon-library-btn';
+    urlBtn.type = 'button';
+    urlBtn.setAttribute('data-icon-url', name);
+    urlBtn.textContent = '链接';
     var clear = document.createElement('button');
     clear.className = 'icon-library-btn';
     clear.type = 'button';
@@ -189,6 +194,7 @@ function renderHomeIconLibrary(){
     input.hidden = true;
     input.setAttribute('data-icon-input', name);
     actions.appendChild(upload);
+    actions.appendChild(urlBtn);
     actions.appendChild(clear);
     item.appendChild(preview);
     item.appendChild(label);
@@ -215,6 +221,19 @@ function handleHomeAppIconFile(appName, file){
   };
   reader.onerror = function(){ toast('读取图片失败'); };
   reader.readAsDataURL(file);
+}
+
+
+function importHomeAppIconUrl(appName){
+  if (HOME_APP_NAMES.indexOf(appName) < 0) return;
+  promptImageUrl(appName + ' 图标链接').then(function(url){
+    if (!url) return;
+    var a = normalizeHomeAppearance();
+    a.iconData[appName] = url;
+    applyHomeAppearance();
+    saveSettings();
+    toast('已更换' + appName + '图标');
+  });
 }
 
 
@@ -328,7 +347,7 @@ function renderHomeAppearanceOptions(){
   if (dimWallpaperLock) { dimWallpaperLock.classList.toggle('is-on', a.dimDarkWallpaperLocked); dimWallpaperLock.setAttribute('aria-pressed', a.dimDarkWallpaperLocked ? 'true' : 'false'); dimWallpaperLock.textContent = a.dimDarkWallpaperLocked ? '已锁定' : '锁定'; }
   if (dimIconLock) { dimIconLock.classList.toggle('is-on', a.dimDarkIconLocked); dimIconLock.setAttribute('aria-pressed', a.dimDarkIconLocked ? 'true' : 'false'); dimIconLock.textContent = a.dimDarkIconLocked ? '已锁定' : '锁定'; }
   var wallpaperState = $('wallpaperState');
-  if (wallpaperState) wallpaperState.textContent = a.wallpaperData ? '已使用本地图片' : '未选择本地图片';
+  if (wallpaperState) wallpaperState.textContent = a.wallpaperData ? (/^https?:/i.test(a.wallpaperData) ? '已使用图床链接' : '已使用本地图片') : '未选择本地图片';
   renderCalendarStyleControls(a);
   $$('.widget-card').forEach(function(card){
     var key = card.dataset.widgetCard;
@@ -726,6 +745,18 @@ function setWidgetSize(key, size){
   if (!a.widgets[key] || ['small','medium','large'].indexOf(size) < 0) return;
   a.widgets[key].size = size;
   queueHomeAppearanceApply();
+}
+
+
+function importWallpaperUrl(){
+  promptImageUrl('壁纸图片链接').then(function(url){
+    if (!url) return;
+    var a = normalizeHomeAppearance();
+    a.wallpaperData = url;
+    applyHomeAppearance();
+    saveSettings();
+    toast('已应用自定义壁纸');
+  });
 }
 
 

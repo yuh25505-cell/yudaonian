@@ -46,6 +46,7 @@ var DEFAULT_HOME_APPEARANCE = {
 var DEFAULT_SETTINGS = {
   theme: 'system', chatAppearance: 'mono', notifications: { enabled: false, minInterval: 60, maxInterval: 240, quietStart: '23:00', quietEnd: '08:00', lastProactiveAt: 0, nextProactiveAt: 0, running: false }, api: clone(DEFAULT_API), apiPresets: [], activeApiPresetId: '', apiQuickKeys: {}, secondaryApi: clone(DEFAULT_API), secondaryApiPresets: [], activeSecondaryApiPresetId: '', secondaryApiQuickKeys: {}, stt: clone(DEFAULT_STT), sttPresets: [], activeSttPresetId: '', sttQuickKeys: {}, activeUserPersonaId: '',
   homeAppearance: clone(DEFAULT_HOME_APPEARANCE),
+  sounds: { volume: 80, message: null, call: null },
   memory: { contextDepth: 40, summaryThreshold: 20 },
   vectorMemory: { embeddingApi: { baseUrl:'', apiKey:'', model:'' }, rerankApi: { baseUrl:'', apiKey:'', model:'' }, topK:8, candidateK:24, similarityThreshold:0.18 },
   font: { activeId: '', items: [] }
@@ -328,9 +329,9 @@ function normalizeHomeAppearance(){
   }
   base.wallpaper = 'mono';
   base.wallpaperData = typeof incoming.wallpaperData === 'string' ? incoming.wallpaperData : '';
-  base.calendarPhoto = typeof incoming.calendarPhoto === 'string' && incoming.calendarPhoto.indexOf('data:image/') === 0 ? incoming.calendarPhoto : '';
-  base.musicCover = typeof incoming.musicCover === 'string' && incoming.musicCover.indexOf('data:image/') === 0 ? incoming.musicCover : '';
-  base.polaroidPhoto = typeof incoming.polaroidPhoto === 'string' && incoming.polaroidPhoto.indexOf('data:image/') === 0 ? incoming.polaroidPhoto : '';
+  base.calendarPhoto = isImageSrc(incoming.calendarPhoto) ? incoming.calendarPhoto : '';
+  base.musicCover = isImageSrc(incoming.musicCover) ? incoming.musicCover : '';
+  base.polaroidPhoto = isImageSrc(incoming.polaroidPhoto) ? incoming.polaroidPhoto : '';
   base.polaroidCaption = typeof incoming.polaroidCaption === 'string' ? incoming.polaroidCaption.slice(0, 24) : base.polaroidCaption;
   var widgets = incoming.widgets && typeof incoming.widgets === 'object' ? incoming.widgets : {};
   /* 旧版「时间」组件已改为「日历」组件：沿用旧的开关状态。 */
